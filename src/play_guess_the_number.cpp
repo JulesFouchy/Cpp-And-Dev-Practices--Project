@@ -13,7 +13,7 @@ void play_guess_the_number()
     // Ask the user for a guess
     bool finished = false;
     while (!finished) {
-        const int user_guess = get_int_from_user();
+        const int user_guess = get_input_from_user<int>();
         if (user_guess < number_to_guess) {
             std::cout << "Greater\n";
         }

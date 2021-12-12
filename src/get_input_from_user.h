@@ -1,14 +1,15 @@
 #pragma once
 #include <iostream>
 
-/// Blocks until the user inputs an int in the console
-inline int get_int_from_user()
+/// Blocks until the user inputs something of type T in the console
+template<typename T>
+T get_input_from_user()
 {
-    int n; // NOLINT
-    while (!(std::cin >> n)) {
-        std::cin.clear(); // The user did not input a number so we need
+    T input; // NOLINT
+    while (!(std::cin >> input)) {
+        std::cin.clear(); // The user did not input a valid T so we need
         std::cin.sync();  // to clear cin and try again
-        std::cout << "This is not a number, try again!\n";
+        std::cout << "Invalid input, try again!\n";
     }
-    return n;
+    return input;
 }
