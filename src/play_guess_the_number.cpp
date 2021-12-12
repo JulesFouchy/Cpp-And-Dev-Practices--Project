@@ -1,18 +1,7 @@
 #include "play_guess_the_number.h"
 #include <iostream>
+#include "get_input_from_user.h"
 #include "rand.h"
-
-/// Blocks until the user inputs an int in the console
-int get_int_from_user()
-{
-    int n; // NOLINT
-    while (!(std::cin >> n)) {
-        std::cin.clear(); // The user did not input a number so we need
-        std::cin.sync();  // to clear cin and try again
-        std::cout << "This is not a number, try again!\n";
-    }
-    return n;
-}
 
 void play_guess_the_number()
 {
