@@ -15,7 +15,12 @@ const char* pick_a_random_word()
     return words[rand(0, words.size() - 1)];
 }
 
+void show_number_of_lives(int number_of_lives)
+{
+    std::cout << "You have " << number_of_lives << " lives\n";
+}
+
 int main()
 {
-    std::cout << pick_a_random_word() << '\n';
+    show_number_of_lives(10);
 }
