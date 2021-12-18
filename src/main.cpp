@@ -12,7 +12,7 @@ const char* pick_a_random_word()
         "opengl",
     };
 
-    return words[rand(0, words.size() - 1)];
+    return words[rand<size_t>(0, words.size() - 1)];
 }
 
 void show_number_of_lives(int number_of_lives)
@@ -22,5 +22,6 @@ void show_number_of_lives(int number_of_lives)
 
 int main()
 {
+    std::cout << pick_a_random_word() << '\n';
     show_number_of_lives(10);
 }
