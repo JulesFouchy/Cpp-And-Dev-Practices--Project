@@ -20,8 +20,16 @@ void show_number_of_lives(int number_of_lives)
     std::cout << "You have " << number_of_lives << " lives\n";
 }
 
+bool player_is_alive(int number_of_lives)
+{
+    return number_of_lives > 0;
+}
+
 int main()
 {
-    std::cout << pick_a_random_word() << '\n';
-    show_number_of_lives(10);
+    std::cout << player_is_alive(5) << '\n';
+    std::cout << player_is_alive(1) << '\n';
+    std::cout << player_is_alive(0) << '\n';
+    std::cout << player_is_alive(-1) << '\n';
+    std::cout << player_is_alive(-5) << '\n';
 }
