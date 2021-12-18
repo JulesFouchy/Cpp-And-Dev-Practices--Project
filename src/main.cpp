@@ -1,4 +1,5 @@
 #include <array>
+#include <cassert>
 #include <iostream>
 #include "play_guess_the_number.h"
 #include "rand.h"
@@ -32,9 +33,22 @@ bool player_has_won(const std::vector<bool>& letters_guessed)
     });
 }
 
+void show_word_to_guess_with_missing_letters(const std::string& word, const std::vector<bool>& letters_guessed)
+{
+    assert(word.size() == letters_guessed.size()); // Its important to assert to make sure that your assumptions are actually checked in code
+    for (size_t i = 0; i < word.size(); ++i) {     // Unfortunately we have to use a raw loop to index into both word and letters_guessed. In C++23 we will be able to use zip instead which is amazing! The loop would then look like `for (const auto& [letter, has_been_guessed] : zip(word, letters_guessed))`
+        if (letters_guessed[i]) {
+            std::cout << word[i];
+        }
+        else {
+            std::cout << '_';
+        }
+        std::cout << ' ';
+    }
+    std::cout << '\n';
+}
+
 int main()
 {
-    std::cout << player_has_won({true, false}) << '\n';
-    std::cout << player_has_won({true, true, true}) << '\n';
-    std::cout << player_has_won({false, true, true}) << '\n';
+    show_word_to_guess_with_missing_letters("hello", {true, false, false, true, false});
 }
