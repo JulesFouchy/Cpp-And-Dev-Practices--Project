@@ -48,7 +48,15 @@ void show_word_to_guess_with_missing_letters(const std::string& word, const std:
     std::cout << '\n';
 }
 
+bool word_contains(char letter, std::string_view word)
+{
+    return word.find(letter) != std::string_view::npos;
+}
+
 int main()
 {
-    show_word_to_guess_with_missing_letters("hello", {true, false, false, true, false});
+    std::cout << word_contains('a', "Hello") << '\n';
+    std::cout << word_contains('h', "Hello") << '\n';
+    std::cout << word_contains('l', "Hello") << '\n';
+    std::cout << word_contains('o', "Hello") << '\n';
 }
