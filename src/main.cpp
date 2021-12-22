@@ -66,6 +66,11 @@ void mark_as_guessed(char guessed_letter, std::vector<bool>& letters_guessed, st
     });
 }
 
+void remove_one_life(int& lives_count)
+{
+    lives_count--;
+}
+
 int main()
 {
     std::string       word = "hello";
