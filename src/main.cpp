@@ -71,21 +71,12 @@ void remove_one_life(int& lives_count)
     lives_count--;
 }
 
+void show_congrats_message(std::string_view word_to_guess)
+{
+    std::cout << "Congrats, you won!\nThe word was \"" << word_to_guess << "\"\n";
+}
+
 int main()
 {
-    std::string       word = "hello";
-    std::vector<bool> letters_guessed(word.size(), false);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
-    mark_as_guessed('c', letters_guessed, word);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
-    mark_as_guessed('e', letters_guessed, word);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
-    mark_as_guessed('h', letters_guessed, word);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
-    mark_as_guessed('d', letters_guessed, word);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
-    mark_as_guessed('l', letters_guessed, word);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
-    mark_as_guessed('o', letters_guessed, word);
-    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    show_congrats_message("opengl");
 }
