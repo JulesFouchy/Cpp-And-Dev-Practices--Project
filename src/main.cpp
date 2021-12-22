@@ -1,6 +1,7 @@
 #include <array>
 #include <cassert>
 #include <iostream>
+#include "get_input_from_user.h"
 #include "play_guess_the_number.h"
 #include "rand.h"
 
@@ -33,7 +34,7 @@ bool player_has_won(const std::vector<bool>& letters_guessed)
     });
 }
 
-void show_word_to_guess_with_missing_letters(const std::string& word, const std::vector<bool>& letters_guessed)
+void show_word_to_guess_with_missing_letters(std::string_view word, const std::vector<bool>& letters_guessed)
 {
     assert(word.size() == letters_guessed.size()); // Its important to assert to make sure that your assumptions are actually checked in code
     for (size_t i = 0; i < word.size(); ++i) {     // Unfortunately we have to use a raw loop to index into both word and letters_guessed. In C++23 we will be able to use zip instead which is amazing! The loop would then look like `for (const auto& [letter, has_been_guessed] : zip(word, letters_guessed))`
@@ -81,8 +82,31 @@ void show_defeat_message(std::string_view word_to_guess)
     std::cout << "Sorry, you lost!\nThe word was \"" << word_to_guess << "\"\n";
 }
 
+void play_hangman()
+{
+    const std::string_view word            = pick_a_random_word();
+    int                    number_of_lives = 8;
+    std::vector<bool>      letters_guessed(word.size(), false);
+    while (player_is_alive(number_of_lives) && !player_has_won(letters_guessed)) {
+        show_number_of_lives(number_of_lives);
+        show_word_to_guess_with_missing_letters(word, letters_guessed);
+        const auto guess = get_input_from_user<char>();
+        if (word_contains(guess, word)) {
+            mark_as_guessed(guess, letters_guessed, word);
+        }
+        else {
+            remove_one_life(number_of_lives);
+        }
+    }
+    if (player_has_won(letters_guessed)) {
+        show_congrats_message(word);
+    }
+    else {
+        show_defeat_message(word);
+    }
+}
+
 int main()
 {
-    show_congrats_message("opengl");
-    show_defeat_message("opengl");
+    play_hangman();
 }
