@@ -53,10 +53,34 @@ bool word_contains(char letter, std::string_view word)
     return word.find(letter) != std::string_view::npos;
 }
 
+void mark_as_guessed(char guessed_letter, std::vector<bool>& letters_guessed, std::string_view word_to_guess)
+{
+    assert(word_to_guess.size() == letters_guessed.size()); // Its important to assert to make sure that your assumptions are actually checked in code
+    std::transform(letters_guessed.begin(), letters_guessed.end(), word_to_guess.begin(), letters_guessed.begin(), [&](bool b, char letter) {
+        if (guessed_letter == letter) {
+            return true;
+        }
+        else {
+            return b;
+        }
+    });
+}
+
 int main()
 {
-    std::cout << word_contains('a', "Hello") << '\n';
-    std::cout << word_contains('h', "Hello") << '\n';
-    std::cout << word_contains('l', "Hello") << '\n';
-    std::cout << word_contains('o', "Hello") << '\n';
+    std::string       word = "hello";
+    std::vector<bool> letters_guessed(word.size(), false);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    mark_as_guessed('c', letters_guessed, word);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    mark_as_guessed('e', letters_guessed, word);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    mark_as_guessed('h', letters_guessed, word);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    mark_as_guessed('d', letters_guessed, word);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    mark_as_guessed('l', letters_guessed, word);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
+    mark_as_guessed('o', letters_guessed, word);
+    show_word_to_guess_with_missing_letters(word, letters_guessed);
 }
