@@ -76,7 +76,13 @@ void show_congrats_message(std::string_view word_to_guess)
     std::cout << "Congrats, you won!\nThe word was \"" << word_to_guess << "\"\n";
 }
 
+void show_defeat_message(std::string_view word_to_guess)
+{
+    std::cout << "Sorry, you lost!\nThe word was \"" << word_to_guess << "\"\n";
+}
+
 int main()
 {
     show_congrats_message("opengl");
+    show_defeat_message("opengl");
 }
