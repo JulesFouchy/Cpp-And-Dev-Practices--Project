@@ -4,6 +4,7 @@
 #include <iostream>
 #include "get_input_from_user.h"
 #include "rand.h"
+#include <algorithm>
 
 class WordWithMissingLetters {
 public:
