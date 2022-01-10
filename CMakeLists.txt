@@ -19,3 +19,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS src/*)
 target_sources(${PROJECT_NAME} PRIVATE ${MY_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE src)
+
+# Add the p6 library
+add_subdirectory(lib/p6)
+target_link_libraries(${PROJECT_NAME} PRIVATE p6::p6)
