@@ -1,4 +1,5 @@
 #include <p6/p6.h>
+#include <array>
 #include <optional>
 #include "menu.h"
 
@@ -67,6 +68,32 @@ void draw_board(int size, p6::Context& ctx)
     }
 }
 
+enum class Player {
+    Noughts,
+    Crosses,
+};
+
+template<int size>
+class Board {
+public:
+    std::optional<Player>& operator[](CellIndex index)
+    {
+        assert(index.x >= 0 && index.x < size &&
+               index.y >= 0 && index.y < size);
+        return _cells[index.x][index.y];
+    }
+
+    const std::optional<Player>& operator[](CellIndex index) const
+    {
+        assert(index.x >= 0 && index.x < size && // Unfortunately I don't think there is a way to avoid this duplication (without using macros).
+               index.y >= 0 && index.y < size);  // We need both the const version to use when our Board is const and we just want to read from it
+        return _cells[index.x][index.y];         // And also the non-const version to modify the Board
+    }
+
+private:
+    std::array<std::array<std::optional<Player>, size>, size> _cells;
+};
+
 std::optional<CellIndex> cell_hovered_by(glm::vec2 position, int board_size)
 {
     const auto pos   = p6::map(position,
@@ -84,10 +111,30 @@ std::optional<CellIndex> cell_hovered_by(glm::vec2 position, int board_size)
     }
 }
 
+template<int size>
+void draw_noughts_and_crosses(const Board<size>& board, p6::Context& ctx)
+{
+    for (int x = 0; x < size; ++x) {
+        for (int y = 0; y < size; ++y) {
+            const auto cell = board[{x, y}];
+            if (cell.has_value()) {
+                if (*cell == Player::Noughts) {
+                    draw_nought({x, y}, size, ctx);
+                }
+                else {
+                    draw_cross({x, y}, size, ctx);
+                }
+            }
+        }
+    }
+}
+
 int main()
 {
     static constexpr int board_size = 3;
-    auto                 ctx        = p6::Context{{800, 800, "Noughts and Crosses"}};
+    auto                 board      = Board<board_size>{};
+    board[{0, 1}]                   = Player::Crosses;
+    auto ctx                        = p6::Context{{800, 800, "Noughts and Crosses"}};
     ctx.update                      = [&]() {
         ctx.background({.3f, 0.25f, 0.35f});
         ctx.stroke_weight = 0.01f;
@@ -97,8 +144,9 @@ int main()
         const auto hovered_cell = cell_hovered_by(ctx.mouse(), board_size);
         if (hovered_cell.has_value()) {
             ctx.fill = {0.f, 1.f, 1.f, 1.f};
-            draw_cross(*hovered_cell, board_size, ctx);
+            draw_nought(*hovered_cell, board_size, ctx);
         }
+        draw_noughts_and_crosses(board, ctx);
     };
     ctx.start();
 }
