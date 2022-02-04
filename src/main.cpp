@@ -21,12 +21,38 @@ glm::vec2 cell_bottom_left_corner(CellIndex index, int board_size)
                    glm::vec2{-1.f}, glm::vec2{1.f});
 }
 
+glm::vec2 cell_center(CellIndex index, int board_size)
+{
+    return cell_bottom_left_corner(index, board_size) + cell_radius(board_size);
+}
+
 /// Draws a cell at the position specified by `index`
 /// It uses the current context's fill, stroke and stroke_weight
 void draw_cell(CellIndex index, int board_size, p6::Context& ctx)
 {
     ctx.square(p6::BottomLeftCorner{cell_bottom_left_corner(index, board_size)},
                p6::Radius{cell_radius(board_size)});
+}
+
+void draw_nought(CellIndex index, int board_size, p6::Context& ctx)
+{
+    ctx.stroke        = {0, 0, 0};
+    ctx.fill          = {0, 0, 0, 0};
+    ctx.stroke_weight = 0.4f * cell_radius(board_size);
+    ctx.circle(p6::Center{cell_center(index, board_size)},
+               p6::Radius{0.9f * cell_radius(board_size)});
+}
+
+void draw_cross(CellIndex index, int board_size, p6::Context& ctx)
+{
+    ctx.stroke          = {0, 0, 0};
+    ctx.fill            = {0, 0, 0, 0};
+    ctx.stroke_weight   = 0.4f * cell_radius(board_size);
+    const auto center   = p6::Center{cell_center(index, board_size)};
+    const auto radii    = p6::Radii{glm::vec2{1.f, 0.2f} * cell_radius(board_size)};
+    const auto rotation = p6::Rotation{0.125_turn};
+    ctx.rectangle(center, radii, rotation);
+    ctx.rectangle(center, radii, -rotation);
 }
 
 /// Draws a game board
@@ -71,7 +97,7 @@ int main()
         const auto hovered_cell = cell_hovered_by(ctx.mouse(), board_size);
         if (hovered_cell.has_value()) {
             ctx.fill = {0.f, 1.f, 1.f, 1.f};
-            draw_cell(*hovered_cell, board_size, ctx);
+            draw_cross(*hovered_cell, board_size, ctx);
         }
     };
     ctx.start();
