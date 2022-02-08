@@ -111,6 +111,16 @@ std::optional<CellIndex> cell_hovered_by(glm::vec2 position, int board_size)
     }
 }
 
+void draw_player(Player player, CellIndex index, int board_size, p6::Context& ctx)
+{
+    if (player == Player::Noughts) {
+        draw_nought(index, board_size, ctx);
+    }
+    else {
+        draw_cross(index, board_size, ctx);
+    }
+}
+
 template<int size>
 void draw_noughts_and_crosses(const Board<size>& board, p6::Context& ctx)
 {
@@ -118,12 +128,7 @@ void draw_noughts_and_crosses(const Board<size>& board, p6::Context& ctx)
         for (int y = 0; y < size; ++y) {
             const auto cell = board[{x, y}];
             if (cell.has_value()) {
-                if (*cell == Player::Noughts) {
-                    draw_nought({x, y}, size, ctx);
-                }
-                else {
-                    draw_cross({x, y}, size, ctx);
-                }
+                draw_player(*cell, {x, y}, size, ctx);
             }
         }
     }
@@ -150,6 +155,16 @@ void try_to_play(std::optional<CellIndex> cell_index, Board<board_size>& board, 
         }
     }
 }
+
+template<int board_size>
+void try_draw_player_on_hovered_cell(Player player, Board<board_size> board, p6::Context& ctx)
+{
+    const auto hovered_cell = cell_hovered_by(ctx.mouse(), board_size);
+    if (hovered_cell.has_value() && !board[*hovered_cell].has_value()) {
+        draw_player(player, *hovered_cell, board_size, ctx);
+    }
+}
+
 int main()
 {
     static constexpr int board_size     = 3;
@@ -167,6 +182,7 @@ int main()
         ctx.fill          = {0.f, 0.f, 0.f, 0.f};
         draw_board(board_size, ctx);
         draw_noughts_and_crosses(board, ctx);
+        try_draw_player_on_hovered_cell(current_player, board, ctx);
     };
     ctx.start();
 }
