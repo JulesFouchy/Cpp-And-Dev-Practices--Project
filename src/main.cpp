@@ -129,23 +129,43 @@ void draw_noughts_and_crosses(const Board<size>& board, p6::Context& ctx)
     }
 }
 
+void change_player(Player& player)
+{
+    if (player == Player::Noughts) {
+        player = Player::Crosses;
+    }
+    else {
+        player = Player::Noughts;
+    }
+}
+
+template<int board_size>
+void try_to_play(std::optional<CellIndex> cell_index, Board<board_size>& board, Player& current_player)
+{
+    if (cell_index.has_value()) {
+        const auto cell_is_empty = !board[*cell_index].has_value();
+        if (cell_is_empty) {
+            board[*cell_index] = current_player;
+            change_player(current_player);
+        }
+    }
+}
 int main()
 {
-    static constexpr int board_size = 3;
-    auto                 board      = Board<board_size>{};
-    board[{0, 1}]                   = Player::Crosses;
-    auto ctx                        = p6::Context{{800, 800, "Noughts and Crosses"}};
-    ctx.update                      = [&]() {
+    static constexpr int board_size     = 3;
+    auto                 board          = Board<board_size>{};
+    auto                 current_player = Player::Crosses;
+    auto                 ctx            = p6::Context{{800, 800, "Noughts and Crosses"}};
+
+    ctx.mouse_pressed = [&](p6::MouseButton event) {
+        try_to_play(cell_hovered_by(event.position, board_size), board, current_player);
+    };
+    ctx.update = [&]() {
         ctx.background({.3f, 0.25f, 0.35f});
         ctx.stroke_weight = 0.01f;
         ctx.stroke        = {1.f, 1.f, 1.f, 1.f};
         ctx.fill          = {0.f, 0.f, 0.f, 0.f};
         draw_board(board_size, ctx);
-        const auto hovered_cell = cell_hovered_by(ctx.mouse(), board_size);
-        if (hovered_cell.has_value()) {
-            ctx.fill = {0.f, 1.f, 1.f, 1.f};
-            draw_nought(*hovered_cell, board_size, ctx);
-        }
         draw_noughts_and_crosses(board, ctx);
     };
     ctx.start();
