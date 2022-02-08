@@ -1,4 +1,5 @@
 #include <p6/p6.h>
+#include <algorithm>
 #include <array>
 #include <optional>
 #include "menu.h"
@@ -80,18 +81,23 @@ public:
     {
         assert(index.x >= 0 && index.x < size &&
                index.y >= 0 && index.y < size);
-        return _cells[index.x][index.y];
+        return _cells[index.x + index.y * size];
     }
 
     const std::optional<Player>& operator[](CellIndex index) const
     {
         assert(index.x >= 0 && index.x < size && // Unfortunately I don't think there is a way to avoid this duplication (without using macros).
                index.y >= 0 && index.y < size);  // We need both the const version to use when our Board is const and we just want to read from it
-        return _cells[index.x][index.y];         // And also the non-const version to modify the Board
+        return _cells[index.x + index.y * size]; // And also the non-const version to modify the Board
     }
 
+    auto begin() { return _cells.begin(); }
+    auto begin() const { return _cells.begin(); }
+    auto end() { return _cells.end(); }
+    auto end() const { return _cells.end(); }
+
 private:
-    std::array<std::array<std::optional<Player>, size>, size> _cells;
+    std::array<std::optional<Player>, size * size> _cells;
 };
 
 std::optional<CellIndex> cell_hovered_by(glm::vec2 position, int board_size)
@@ -165,6 +171,14 @@ void try_draw_player_on_hovered_cell(Player player, Board<board_size> board, p6:
     }
 }
 
+template<int board_size>
+bool board_is_full(const Board<board_size>& board)
+{
+    return std::all_of(board.begin(), board.end(), [](const auto& cell) {
+        return cell.has_value();
+    });
+}
+
 int main()
 {
     static constexpr int board_size     = 3;
@@ -183,6 +197,9 @@ int main()
         draw_board(board_size, ctx);
         draw_noughts_and_crosses(board, ctx);
         try_draw_player_on_hovered_cell(current_player, board, ctx);
+        if (board_is_full(board)) {
+            ctx.stop();
+        }
     };
     ctx.start();
 }
