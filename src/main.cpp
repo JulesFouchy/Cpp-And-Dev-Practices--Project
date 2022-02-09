@@ -1,6 +1,7 @@
 #include <p6/p6.h>
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <optional>
 #include "menu.h"
 
@@ -179,6 +180,77 @@ bool board_is_full(const Board<board_size>& board)
     });
 }
 
+template<int board_size>
+std::optional<Player> check_for_winner_on_line(const Board<board_size>& board, std::function<CellIndex(int)> index_generator)
+{
+    const bool are_all_equal = [&]() {
+        for (int position = 0; position < board_size - 1; ++position) {
+            if (board[index_generator(position)] != board[index_generator(position + 1)]) {
+                return false;
+            }
+        }
+        return true;
+    }();
+    if (are_all_equal && board[index_generator(0)].has_value()) {
+        return *board[index_generator(0)];
+    }
+    else {
+        return std::nullopt;
+    }
+}
+
+template<int board_size>
+std::optional<Player> check_for_winner(const Board<board_size>& board)
+{
+    std::optional<Player> winner = std::nullopt;
+    // Columns
+    for (int x = 0; x < board_size && !winner.has_value(); ++x) {
+        winner = check_for_winner_on_line(board, [x](int position) {
+            return CellIndex{x, position};
+        });
+    }
+    // Rows
+    for (int y = 0; y < board_size && !winner.has_value(); ++y) {
+        winner = check_for_winner_on_line(board, [y](int position) {
+            return CellIndex{position, y};
+        });
+    }
+    // Diagonal
+    if (!winner.has_value()) {
+        winner = check_for_winner_on_line(board, [](int position) {
+            return CellIndex{position, position};
+        });
+    }
+    // Anti-diagonal
+    if (!winner.has_value()) {
+        winner = check_for_winner_on_line(board, [](int position) {
+            return CellIndex{position, board_size - position - 1};
+        });
+    }
+    return winner;
+}
+
+template<int board_size>
+bool game_is_finished(const Board<board_size>& board)
+{
+    if (const auto winner = check_for_winner(board); winner.has_value()) {
+        if (*winner == Player::Noughts) {
+            std::cout << "Noughts have won!\n";
+        }
+        else {
+            std::cout << "Crosses have won!\n";
+        }
+        return true;
+    }
+    else if (board_is_full(board)) {
+        std::cout << "This is a draw!\n";
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 int main()
 {
     static constexpr int board_size     = 3;
@@ -197,7 +269,7 @@ int main()
         draw_board(board_size, ctx);
         draw_noughts_and_crosses(board, ctx);
         try_draw_player_on_hovered_cell(current_player, board, ctx);
-        if (board_is_full(board)) {
+        if (game_is_finished(board)) {
             ctx.stop();
         }
     };
