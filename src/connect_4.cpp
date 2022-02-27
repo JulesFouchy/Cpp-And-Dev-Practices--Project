@@ -173,48 +173,44 @@ std::optional<Player> winner_on_anti_diagonal(int diagonal_index, const Board& b
     });
 }
 
-std::optional<Player> winner_on_rows(const Board& board)
+std::optional<Player> winner_on_lines(const Board& board, int max_iterations,
+                                      std::function<std::optional<Player>(int, const Board&)> check_for_winner)
 {
-    for (int i = 0; i < board.height(); ++i) {
-        const auto winner = winner_on_row(i, board);
+    for (int i = 0; i < max_iterations; ++i) {
+        const auto winner = check_for_winner(i, board);
         if (winner.has_value()) {
             return winner;
         }
     }
     return std::nullopt;
+}
+
+std::optional<Player> winner_on_rows(const Board& board)
+{
+    return winner_on_lines(board,
+                           board.height(),
+                           &winner_on_row);
 }
 
 std::optional<Player> winner_on_columns(const Board& board)
 {
-    for (int i = 0; i < board.width(); ++i) {
-        const auto winner = winner_on_column(i, board);
-        if (winner.has_value()) {
-            return winner;
-        }
-    }
-    return std::nullopt;
+    return winner_on_lines(board,
+                           board.width(),
+                           &winner_on_column);
 }
 
 std::optional<Player> winner_on_diagonals(const Board& board)
 {
-    for (int i = 0; i < board.width() + board.height() - 1; ++i) {
-        const auto winner = winner_on_diagonal(i, board);
-        if (winner.has_value()) {
-            return winner;
-        }
-    }
-    return std::nullopt;
+    return winner_on_lines(board,
+                           board.width() + board.height() - 1,
+                           &winner_on_diagonal);
 }
 
 std::optional<Player> winner_on_anti_diagonals(const Board& board)
 {
-    for (int i = 0; i < board.width() + board.height() - 1; ++i) {
-        const auto winner = winner_on_anti_diagonal(i, board);
-        if (winner.has_value()) {
-            return winner;
-        }
-    }
-    return std::nullopt;
+    return winner_on_lines(board,
+                           board.width() + board.height() - 1,
+                           &winner_on_anti_diagonal);
 }
 
 std::optional<Player> check_for_winner(const Board& board)
