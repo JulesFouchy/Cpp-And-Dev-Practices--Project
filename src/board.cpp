@@ -1,14 +1,14 @@
 #include "board.h"
 
-float cell_radius(BoardSize board_size)
-{
-    return 1.f / static_cast<float>(board_size.height);
-}
-
-static float aspect_ratio(BoardSize board_size)
+float aspect_ratio(BoardSize board_size)
 {
     return static_cast<float>(board_size.width) /
            static_cast<float>(board_size.height);
+}
+
+float cell_radius(BoardSize board_size)
+{
+    return 1.f / static_cast<float>(board_size.height);
 }
 
 glm::vec2 cell_bottom_left_corner(CellIndex index, BoardSize board_size)

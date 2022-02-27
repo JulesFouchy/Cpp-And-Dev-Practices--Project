@@ -24,6 +24,8 @@ struct BoardSize {
     }
 };
 
+float aspect_ratio(BoardSize board_size);
+
 float cell_radius(BoardSize board_size);
 
 glm::vec2 cell_bottom_left_corner(CellIndex index, BoardSize board_size);
