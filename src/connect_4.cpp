@@ -86,8 +86,11 @@ void preview_token_at(glm::vec2 pos_in_window_space, const Board& board, Player 
 {
     const auto hovered_column = column_at(pos_in_window_space, board.size());
     if (hovered_column.has_value()) {
-        draw_token({*hovered_column, *try_to_find_lowest_empty_row_index(*hovered_column, board)},
-                   board.size(), player, ctx, true);
+        const auto row = try_to_find_lowest_empty_row_index(*hovered_column, board);
+        if (row.has_value()) {
+            draw_token({*hovered_column, *row},
+                       board.size(), player, ctx, true);
+        }
     }
 }
 
