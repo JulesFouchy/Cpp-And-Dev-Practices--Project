@@ -70,3 +70,11 @@ public:
 private:
     std::array<std::optional<Player>, board_width * board_height> _cells;
 };
+
+template<int board_width, int board_height, typename Player>
+bool board_is_full(const BoardT<board_width, board_height, Player>& board)
+{
+    return std::all_of(board.begin(), board.end(), [](const auto& cell) {
+        return cell.has_value();
+    });
+}

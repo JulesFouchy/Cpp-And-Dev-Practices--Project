@@ -100,13 +100,6 @@ void try_draw_player_on_hovered_cell(Player player, Board board, p6::Context& ct
     }
 }
 
-bool board_is_full(const Board& board)
-{
-    return std::all_of(board.begin(), board.end(), [](const auto& cell) {
-        return cell.has_value();
-    });
-}
-
 std::optional<Player> check_for_winner_on_line(const Board& board, std::function<CellIndex(int)> index_generator)
 {
     const bool are_all_equal = [&]() {
