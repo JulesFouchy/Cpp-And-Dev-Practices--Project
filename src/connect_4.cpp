@@ -1,5 +1,6 @@
 #include "connect_4.h"
 #include <p6/p6.h>
+#include <iostream>
 #include "board.h"
 
 enum class Player {
@@ -94,6 +95,17 @@ void preview_token_at(glm::vec2 pos_in_window_space, const Board& board, Player 
     }
 }
 
+bool game_is_over(const Board& board)
+{
+    if (board_is_full(board)) {
+        std::cout << "This is a draw!\n";
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 void play_connect_4()
 {
     auto ctx            = p6::Context{{1200, 800, "Connect 4"}};
@@ -113,6 +125,9 @@ void play_connect_4()
         draw_board(board.size(), ctx);
         draw_tokens(board, ctx);
         preview_token_at(ctx.mouse(), board, current_player, ctx);
+        if (game_is_over(board)) {
+            ctx.stop();
+        }
     };
     ctx.start();
 }
