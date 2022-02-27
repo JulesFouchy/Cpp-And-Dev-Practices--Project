@@ -1,7 +1,9 @@
 #include "connect_4.h"
 #include <p6/p6.h>
+#include <chrono>
 #include <functional>
 #include <iostream>
+#include <thread>
 #include "board.h"
 
 enum class Player {
@@ -273,6 +275,8 @@ void play_connect_4()
         draw_tokens(board, ctx);
         preview_token_at(ctx.mouse(), board, current_player, ctx);
         if (game_is_over(board)) {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(2s);
             ctx.stop();
         }
     };
