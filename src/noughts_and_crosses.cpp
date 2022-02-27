@@ -3,8 +3,14 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include <optional>
 #include "board.h"
+
+enum class Player {
+    Noughts,
+    Crosses,
+};
+
+using Board = BoardT<3, Player>;
 
 void draw_nought(CellIndex index, int board_size, p6::Context& ctx)
 {
@@ -26,37 +32,6 @@ void draw_cross(CellIndex index, int board_size, p6::Context& ctx)
     ctx.rectangle(center, radii, rotation);
     ctx.rectangle(center, radii, -rotation);
 }
-
-enum class Player {
-    Noughts,
-    Crosses,
-};
-
-template<int size>
-class Board {
-public:
-    std::optional<Player>& operator[](CellIndex index)
-    {
-        assert(index.x >= 0 && index.x < size &&
-               index.y >= 0 && index.y < size);
-        return _cells[index.x + index.y * size];
-    }
-
-    const std::optional<Player>& operator[](CellIndex index) const
-    {
-        assert(index.x >= 0 && index.x < size && // Unfortunately I don't think there is a way to avoid this duplication (without using macros).
-               index.y >= 0 && index.y < size);  // We need both the const version to use when our Board is const and we just want to read from it
-        return _cells[index.x + index.y * size]; // And also the non-const version to modify the Board
-    }
-
-    auto begin() { return _cells.begin(); }
-    auto begin() const { return _cells.begin(); }
-    auto end() { return _cells.end(); }
-    auto end() const { return _cells.end(); }
-
-private:
-    std::array<std::optional<Player>, size * size> _cells;
-};
 
 std::optional<CellIndex> cell_hovered_by(glm::vec2 position, int board_size)
 {
@@ -85,14 +60,13 @@ void draw_player(Player player, CellIndex index, int board_size, p6::Context& ct
     }
 }
 
-template<int size>
-void draw_noughts_and_crosses(const Board<size>& board, p6::Context& ctx)
+void draw_noughts_and_crosses(const Board& board, p6::Context& ctx)
 {
-    for (int x = 0; x < size; ++x) {
-        for (int y = 0; y < size; ++y) {
+    for (int x = 0; x < board.size(); ++x) {
+        for (int y = 0; y < board.size(); ++y) {
             const auto cell = board[{x, y}];
             if (cell.has_value()) {
-                draw_player(*cell, {x, y}, size, ctx);
+                draw_player(*cell, {x, y}, board.size(), ctx);
             }
         }
     }
@@ -108,8 +82,7 @@ void change_player(Player& player)
     }
 }
 
-template<int board_size>
-void try_to_play(std::optional<CellIndex> cell_index, Board<board_size>& board, Player& current_player)
+void try_to_play(std::optional<CellIndex> cell_index, Board& board, Player& current_player)
 {
     if (cell_index.has_value()) {
         const auto cell_is_empty = !board[*cell_index].has_value();
@@ -120,28 +93,25 @@ void try_to_play(std::optional<CellIndex> cell_index, Board<board_size>& board, 
     }
 }
 
-template<int board_size>
-void try_draw_player_on_hovered_cell(Player player, Board<board_size> board, p6::Context& ctx)
+void try_draw_player_on_hovered_cell(Player player, Board board, p6::Context& ctx)
 {
-    const auto hovered_cell = cell_hovered_by(ctx.mouse(), board_size);
+    const auto hovered_cell = cell_hovered_by(ctx.mouse(), board.size());
     if (hovered_cell.has_value() && !board[*hovered_cell].has_value()) {
-        draw_player(player, *hovered_cell, board_size, ctx);
+        draw_player(player, *hovered_cell, board.size(), ctx);
     }
 }
 
-template<int board_size>
-bool board_is_full(const Board<board_size>& board)
+bool board_is_full(const Board& board)
 {
     return std::all_of(board.begin(), board.end(), [](const auto& cell) {
         return cell.has_value();
     });
 }
 
-template<int board_size>
-std::optional<Player> check_for_winner_on_line(const Board<board_size>& board, std::function<CellIndex(int)> index_generator)
+std::optional<Player> check_for_winner_on_line(const Board& board, std::function<CellIndex(int)> index_generator)
 {
     const bool are_all_equal = [&]() {
-        for (int position = 0; position < board_size - 1; ++position) {
+        for (int position = 0; position < board.size() - 1; ++position) {
             if (board[index_generator(position)] != board[index_generator(position + 1)]) {
                 return false;
             }
@@ -156,18 +126,17 @@ std::optional<Player> check_for_winner_on_line(const Board<board_size>& board, s
     }
 }
 
-template<int board_size>
-std::optional<Player> check_for_winner(const Board<board_size>& board)
+std::optional<Player> check_for_winner(const Board& board)
 {
     std::optional<Player> winner = std::nullopt;
     // Columns
-    for (int x = 0; x < board_size && !winner.has_value(); ++x) {
+    for (int x = 0; x < board.size() && !winner.has_value(); ++x) {
         winner = check_for_winner_on_line(board, [x](int position) {
             return CellIndex{x, position};
         });
     }
     // Rows
-    for (int y = 0; y < board_size && !winner.has_value(); ++y) {
+    for (int y = 0; y < board.size() && !winner.has_value(); ++y) {
         winner = check_for_winner_on_line(board, [y](int position) {
             return CellIndex{position, y};
         });
@@ -180,15 +149,14 @@ std::optional<Player> check_for_winner(const Board<board_size>& board)
     }
     // Anti-diagonal
     if (!winner.has_value()) {
-        winner = check_for_winner_on_line(board, [](int position) {
-            return CellIndex{position, board_size - position - 1};
+        winner = check_for_winner_on_line(board, [&](int position) {
+            return CellIndex{position, board.size() - position - 1};
         });
     }
     return winner;
 }
 
-template<int board_size>
-bool game_is_finished(const Board<board_size>& board)
+bool game_is_finished(const Board& board)
 {
     if (const auto winner = check_for_winner(board); winner.has_value()) {
         if (*winner == Player::Noughts) {
@@ -210,20 +178,19 @@ bool game_is_finished(const Board<board_size>& board)
 
 void play_noughts_and_crosses()
 {
-    static constexpr int board_size     = 3;
-    auto                 board          = Board<board_size>{};
-    auto                 current_player = Player::Crosses;
-    auto                 ctx            = p6::Context{{800, 800, "Noughts and Crosses"}};
+    auto board          = Board{};
+    auto current_player = Player::Crosses;
+    auto ctx            = p6::Context{{800, 800, "Noughts and Crosses"}};
 
     ctx.mouse_pressed = [&](p6::MouseButton event) {
-        try_to_play(cell_hovered_by(event.position, board_size), board, current_player);
+        try_to_play(cell_hovered_by(event.position, board.size()), board, current_player);
     };
     ctx.update = [&]() {
         ctx.background({.3f, 0.25f, 0.35f});
         ctx.stroke_weight = 0.01f;
         ctx.stroke        = {1.f, 1.f, 1.f, 1.f};
         ctx.fill          = {0.f, 0.f, 0.f, 0.f};
-        draw_board(board_size, ctx);
+        draw_board(board.size(), ctx);
         draw_noughts_and_crosses(board, ctx);
         try_draw_player_on_hovered_cell(current_player, board, ctx);
         if (game_is_finished(board)) {
