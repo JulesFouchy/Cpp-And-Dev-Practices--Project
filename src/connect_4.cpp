@@ -56,14 +56,34 @@ bool try_to_play_in_column(int column_index, Player player, Board& board)
     }
 }
 
+std::optional<int> column_at(glm::vec2 /*pos_in_window_space*/)
+{
+    return std::make_optional(1);
+}
+
+Player next_player(Player player)
+{
+    if (player == Player::Red) {
+        return Player::Yellow;
+    }
+    else {
+        return Player::Red;
+    }
+}
+
 void play_connect_4()
 {
-    auto ctx   = p6::Context{{1200, 800, "Connect 4"}};
-    auto board = Board{};
-    try_to_play_in_column(0, Player::Red, board);
-    try_to_play_in_column(1, Player::Yellow, board);
-    try_to_play_in_column(0, Player::Red, board);
-    try_to_play_in_column(0, Player::Yellow, board);
+    auto ctx            = p6::Context{{1200, 800, "Connect 4"}};
+    auto board          = Board{};
+    auto current_player = Player::Red;
+    ctx.mouse_pressed   = [&](auto) {
+        const auto column_index = column_at(ctx.mouse());
+        if (column_index.has_value()) {
+            if (try_to_play_in_column(*column_index, current_player, board)) {
+                current_player = next_player(current_player);
+            }
+        }
+    };
     ctx.update = [&]() {
         ctx.background({.3f, 0.25f, 0.35f});
         ctx.fill = {1.f, 1.f, 1.f, 0.5f};
