@@ -119,6 +119,71 @@ std::optional<Player> winner_on_line(const Board& board, std::function<std::opti
     return std::nullopt;
 }
 
+std::optional<Player> winner_on_row(int row_index, const Board& board)
+{
+    return winner_on_line(board, [&](int index) -> std::optional<CellIndex> {
+        if (0 <= index && index < board.width()) {
+            return std::make_optional(CellIndex{index, row_index});
+        }
+        else {
+            return std::nullopt;
+        }
+    });
+}
+
+std::optional<Player> winner_on_column(int column_index, const Board& board)
+{
+    return winner_on_line(board, [&](int index) -> std::optional<CellIndex> {
+        if (0 <= index && index < board.height()) {
+            return std::make_optional(CellIndex{column_index, index});
+        }
+        else {
+            return std::nullopt;
+        }
+    });
+}
+
+std::optional<Player> winner_on_rows(const Board& board)
+{
+    for (int i = 0; i < board.height(); ++i) {
+        const auto winner = winner_on_row(i, board);
+        if (winner.has_value()) {
+            return winner;
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<Player> winner_on_columns(const Board& board)
+{
+    for (int i = 0; i < board.width(); ++i) {
+        const auto winner = winner_on_column(i, board);
+        if (winner.has_value()) {
+            return winner;
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<Player> check_for_winner(const Board& board)
+{
+    auto winner = winner_on_rows(board);
+    if (!winner.has_value()) {
+        winner = winner_on_columns(board);
+    }
+    return winner;
+}
+
+const char* to_string(Player player)
+{
+    if (player == Player::Red) {
+        return "Red";
+    }
+    else {
+        return "Yellow";
+    }
+}
+
 bool game_is_over(const Board& board)
 {
     if (board_is_full(board)) {
@@ -126,14 +191,10 @@ bool game_is_over(const Board& board)
         return true;
     }
     else {
-        const auto winner = winner_on_line(board, [&](int index) -> std::optional<CellIndex> {
-            if (0 <= index && index < board.width()) {
-                return std::make_optional(CellIndex{index, 0});
-            }
-            else {
-                return std::nullopt;
-            }
-        });
+        const auto winner = check_for_winner(board);
+        if (winner.has_value()) {
+            std::cout << to_string(*winner) << " has won!\n";
+        }
         return winner.has_value();
     }
 }
