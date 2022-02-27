@@ -1,6 +1,7 @@
 #pragma once
 
 #include <p6/p6.h>
+#include <array>
 #include <optional>
 
 struct CellIndex {

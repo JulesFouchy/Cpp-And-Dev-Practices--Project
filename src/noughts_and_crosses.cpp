@@ -1,7 +1,6 @@
 #include "noughts_and_crosses.h"
 #include <p6/p6.h>
 #include <algorithm>
-#include <array>
 #include <iostream>
 #include "board.h"
 
