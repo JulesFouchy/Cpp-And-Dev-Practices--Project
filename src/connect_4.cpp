@@ -82,6 +82,15 @@ Player next_player(Player player)
     }
 }
 
+void preview_token_at(glm::vec2 pos_in_window_space, const Board& board, Player player, p6::Context& ctx)
+{
+    const auto hovered_column = column_at(pos_in_window_space, board.size());
+    if (hovered_column.has_value()) {
+        draw_token({*hovered_column, *try_to_find_lowest_empty_row_index(*hovered_column, board)},
+                   board.size(), player, ctx, true);
+    }
+}
+
 void play_connect_4()
 {
     auto ctx            = p6::Context{{1200, 800, "Connect 4"}};
@@ -100,11 +109,7 @@ void play_connect_4()
         ctx.fill = {1.f, 1.f, 1.f, 0.95f};
         draw_board(board.size(), ctx);
         draw_tokens(board, ctx);
-        const auto hovered_column = column_at(ctx.mouse(), board.size());
-        if (hovered_column.has_value()) {
-            draw_token({*hovered_column, *try_to_find_lowest_empty_row_index(*hovered_column, board)},
-                       board.size(), current_player, ctx, true);
-        }
+        preview_token_at(ctx.mouse(), board, current_player, ctx);
     };
     ctx.start();
 }
