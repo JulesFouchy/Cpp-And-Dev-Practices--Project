@@ -10,7 +10,7 @@ enum class Player {
     Crosses,
 };
 
-using Board = BoardT<3, Player>;
+using Board = BoardT<3, 3, Player>;
 
 void draw_nought(CellIndex index, int board_size, p6::Context& ctx)
 {
@@ -62,11 +62,11 @@ void draw_player(Player player, CellIndex index, int board_size, p6::Context& ct
 
 void draw_noughts_and_crosses(const Board& board, p6::Context& ctx)
 {
-    for (int x = 0; x < board.size(); ++x) {
-        for (int y = 0; y < board.size(); ++y) {
+    for (int x = 0; x < board.width(); ++x) {
+        for (int y = 0; y < board.height(); ++y) {
             const auto cell = board[{x, y}];
             if (cell.has_value()) {
-                draw_player(*cell, {x, y}, board.size(), ctx);
+                draw_player(*cell, {x, y}, board.height(), ctx);
             }
         }
     }
@@ -95,9 +95,9 @@ void try_to_play(std::optional<CellIndex> cell_index, Board& board, Player& curr
 
 void try_draw_player_on_hovered_cell(Player player, Board board, p6::Context& ctx)
 {
-    const auto hovered_cell = cell_hovered_by(ctx.mouse(), board.size());
+    const auto hovered_cell = cell_hovered_by(ctx.mouse(), board.height());
     if (hovered_cell.has_value() && !board[*hovered_cell].has_value()) {
-        draw_player(player, *hovered_cell, board.size(), ctx);
+        draw_player(player, *hovered_cell, board.height(), ctx);
     }
 }
 
@@ -111,7 +111,7 @@ bool board_is_full(const Board& board)
 std::optional<Player> check_for_winner_on_line(const Board& board, std::function<CellIndex(int)> index_generator)
 {
     const bool are_all_equal = [&]() {
-        for (int position = 0; position < board.size() - 1; ++position) {
+        for (int position = 0; position < board.height() - 1; ++position) {
             if (board[index_generator(position)] != board[index_generator(position + 1)]) {
                 return false;
             }
@@ -130,13 +130,13 @@ std::optional<Player> check_for_winner(const Board& board)
 {
     std::optional<Player> winner = std::nullopt;
     // Columns
-    for (int x = 0; x < board.size() && !winner.has_value(); ++x) {
+    for (int x = 0; x < board.width() && !winner.has_value(); ++x) {
         winner = check_for_winner_on_line(board, [x](int position) {
             return CellIndex{x, position};
         });
     }
     // Rows
-    for (int y = 0; y < board.size() && !winner.has_value(); ++y) {
+    for (int y = 0; y < board.height() && !winner.has_value(); ++y) {
         winner = check_for_winner_on_line(board, [y](int position) {
             return CellIndex{position, y};
         });
@@ -150,7 +150,7 @@ std::optional<Player> check_for_winner(const Board& board)
     // Anti-diagonal
     if (!winner.has_value()) {
         winner = check_for_winner_on_line(board, [&](int position) {
-            return CellIndex{position, board.size() - position - 1};
+            return CellIndex{position, board.height() - position - 1};
         });
     }
     return winner;
@@ -183,14 +183,14 @@ void play_noughts_and_crosses()
     auto ctx            = p6::Context{{800, 800, "Noughts and Crosses"}};
 
     ctx.mouse_pressed = [&](p6::MouseButton event) {
-        try_to_play(cell_hovered_by(event.position, board.size()), board, current_player);
+        try_to_play(cell_hovered_by(event.position, board.height()), board, current_player);
     };
     ctx.update = [&]() {
         ctx.background({.3f, 0.25f, 0.35f});
         ctx.stroke_weight = 0.01f;
         ctx.stroke        = {1.f, 1.f, 1.f, 1.f};
         ctx.fill          = {0.f, 0.f, 0.f, 0.f};
-        draw_board(board.size(), ctx);
+        draw_board(board.height(), ctx);
         draw_noughts_and_crosses(board, ctx);
         try_draw_player_on_hovered_cell(current_player, board, ctx);
         if (game_is_finished(board)) {
