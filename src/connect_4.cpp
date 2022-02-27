@@ -1,5 +1,6 @@
 #include "connect_4.h"
 #include <p6/p6.h>
+#include <functional>
 #include <iostream>
 #include "board.h"
 
@@ -95,6 +96,29 @@ void preview_token_at(glm::vec2 pos_in_window_space, const Board& board, Player 
     }
 }
 
+std::optional<Player> winner_on_line(const Board& board, std::function<std::optional<CellIndex>(int)> index_generator)
+{
+    auto prev_cell          = index_generator(0);
+    auto cell               = index_generator(1);
+    int  index              = 1;
+    int  consecutive_tokens = 1;
+    while (cell.has_value()) {
+        if (board[*prev_cell] == board[*cell] && board[*cell].has_value()) {
+            consecutive_tokens++;
+            if (consecutive_tokens == 4) {
+                return *board[*cell];
+            }
+        }
+        else {
+            consecutive_tokens = 1;
+        }
+        index++;
+        prev_cell = cell;
+        cell      = index_generator(index);
+    }
+    return std::nullopt;
+}
+
 bool game_is_over(const Board& board)
 {
     if (board_is_full(board)) {
@@ -102,7 +126,15 @@ bool game_is_over(const Board& board)
         return true;
     }
     else {
-        return false;
+        const auto winner = winner_on_line(board, [&](int index) -> std::optional<CellIndex> {
+            if (0 <= index && index < board.width()) {
+                return std::make_optional(CellIndex{index, 0});
+            }
+            else {
+                return std::nullopt;
+            }
+        });
+        return winner.has_value();
     }
 }
 
