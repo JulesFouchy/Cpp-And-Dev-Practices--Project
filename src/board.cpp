@@ -2,16 +2,23 @@
 
 float cell_radius(BoardSize board_size)
 {
-    return 1.f / static_cast<float>(board_size.width);
+    return 1.f / static_cast<float>(board_size.height);
+}
+
+static float aspect_ratio(BoardSize board_size)
+{
+    return static_cast<float>(board_size.width) /
+           static_cast<float>(board_size.height);
 }
 
 glm::vec2 cell_bottom_left_corner(CellIndex index, BoardSize board_size)
 {
-    const auto idx = glm::vec2{static_cast<float>(index.x),
+    const auto  idx   = glm::vec2{static_cast<float>(index.x),
                                static_cast<float>(index.y)};
+    const float ratio = aspect_ratio(board_size);
     return p6::map(idx,
-                   glm::vec2{0.f}, glm::vec2{static_cast<float>(board_size.width)},
-                   glm::vec2{-1.f}, glm::vec2{1.f});
+                   glm::vec2{0.f}, glm::vec2{static_cast<float>(board_size.width), static_cast<float>(board_size.height)},
+                   glm::vec2{-ratio, -1.f}, glm::vec2{ratio, 1.f});
 }
 
 glm::vec2 cell_center(CellIndex index, BoardSize board_size)
