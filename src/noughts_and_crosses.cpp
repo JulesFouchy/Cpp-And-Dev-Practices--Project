@@ -4,38 +4,7 @@
 #include <array>
 #include <iostream>
 #include <optional>
-
-struct CellIndex {
-    int x;
-    int y;
-};
-
-float cell_radius(int board_size)
-{
-    return 1.f / static_cast<float>(board_size);
-}
-
-glm::vec2 cell_bottom_left_corner(CellIndex index, int board_size)
-{
-    const auto idx = glm::vec2{static_cast<float>(index.x),
-                               static_cast<float>(index.y)};
-    return p6::map(idx,
-                   glm::vec2{0.f}, glm::vec2{static_cast<float>(board_size)},
-                   glm::vec2{-1.f}, glm::vec2{1.f});
-}
-
-glm::vec2 cell_center(CellIndex index, int board_size)
-{
-    return cell_bottom_left_corner(index, board_size) + cell_radius(board_size);
-}
-
-/// Draws a cell at the position specified by `index`
-/// It uses the current context's fill, stroke and stroke_weight
-void draw_cell(CellIndex index, int board_size, p6::Context& ctx)
-{
-    ctx.square(p6::BottomLeftCorner{cell_bottom_left_corner(index, board_size)},
-               p6::Radius{cell_radius(board_size)});
-}
+#include "board.h"
 
 void draw_nought(CellIndex index, int board_size, p6::Context& ctx)
 {
@@ -56,18 +25,6 @@ void draw_cross(CellIndex index, int board_size, p6::Context& ctx)
     const auto rotation = p6::Rotation{0.125_turn};
     ctx.rectangle(center, radii, rotation);
     ctx.rectangle(center, radii, -rotation);
-}
-
-/// Draws a game board
-/// size is the number of rows and the number of columns
-/// It uses the current context's fill, stroke and stroke_weight
-void draw_board(int size, p6::Context& ctx)
-{
-    for (int x = 0; x < size; ++x) {
-        for (int y = 0; y < size; ++y) {
-            draw_cell({x, y}, size, ctx);
-        }
-    }
 }
 
 enum class Player {
